@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
       perror("Error opening file");
       return EXIT_FAILURE;
   }
-  FATFile = fopen("FAT.txt", "r+");
+  FATFile = fopen("FAT.txt", "r+b");
   if (FATFile == NULL) {
       perror("Error opening file");
       return EXIT_FAILURE;
@@ -105,12 +105,14 @@ int main(int argc, char *argv[])
   resetDirectory();
   resetFAT();
   resetDisk();
-  initializeFAT();
   readFAT();
   readDirectory();
 
   createFile("file1.txt", 1500);
-  writeFile("file1.txt", 0, "Hola mundo");
+  createFile("file2.txt", 2000);
+  createFile("file3.txt", 1000);
+  deleteFile("file2.txt");
+  // writeFile("file1.txt", 0, "Hola mundo");
   fclose(disk);
   fclose(FATFile);
   fclose(directoryFile);

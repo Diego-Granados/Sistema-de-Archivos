@@ -6,6 +6,7 @@
 #define BLOCK_SIZE 510
 #define MAX_FILES 100
 #define NUM_BLOCKS 2048
+#define MAX_LINE_LENGTH 1024
 
 
 // Vamos a usar para los archivos lo de la lista enlazada y para los bloques libres el counting
@@ -231,6 +232,49 @@ static void deleteBlock(struct Block *nodeToDelete)
     free(nodeToDelete); // Se libera la memoria
 }
 
+// Función para borrar un nodo de una lista
+static void deleteFileFromList(struct File *nodeToDelete)
+{
+    if (nodeToDelete == NULL)
+    {
+        printf("El nodo a eliminar no es válido.\n");
+        return;
+    }
+
+    // Si el nodo es la cabeza
+    if (nodeToDelete == directory->head)
+    {
+        // Si la lista solo tiene un nodo
+        if (directory->tail == directory->head)
+        {
+            directory->tail = NULL;
+        }
+        directory->head = nodeToDelete->next; // Se actualiza la cabeza
+
+        // Si la lista no está vacía, se actualiza el puntero previo de la nueva cabeza
+        if (directory->head != NULL)
+        {
+            directory->head->prev = NULL;
+        }
+    }
+    // Si el nodo es la cola
+    else if (nodeToDelete == directory->tail)
+    {
+        directory->tail = nodeToDelete->prev; // Update the tail
+        if (directory->tail != NULL)
+        {
+            directory->tail->next = NULL; // Set the next pointer of the new tail to NULL
+        }
+    }
+    // If the node to delete is in the middle
+    else
+    {
+        nodeToDelete->prev->next = nodeToDelete->next;
+        nodeToDelete->next->prev = nodeToDelete->prev;
+    }
+    free(nodeToDelete); // Se libera la memoria
+}
+
 void initializeFAT() {
     for (int i = 0; i < NUM_BLOCKS; i++) {
         FAT[i] = 0x5F5F;
@@ -240,7 +284,8 @@ void initializeFAT() {
 }
 
 static void writeFAT(uint16_t block, uint16_t value) {
-    if (fseek(FATFile, block, SEEK_SET) != 0) {
+    int position = (block * sizeof(uint16_t));
+    if (fseek(FATFile, position, SEEK_SET) != 0) {
         perror("Error seeking in file");
         exit(EXIT_FAILURE);
     }
@@ -273,12 +318,28 @@ static void resetFAT(){
     }
 }
 
+
+
 static void saveFile(struct File *temp){
-    if (fseek(directoryFile, 0, SEEK_END) != 0) {
-        perror("Error seeking to the end of file");
+    fclose(directoryFile);
+    directoryFile = fopen("directory.txt", "a+"); // Open in read/append mode
+    if (directoryFile == NULL) {
+        perror("Error opening file");
+        return;
     }
-    
-    fprintf(directoryFile, "%s %d %d %d\n", temp->name, temp->size, temp->firstBlock);
+
+    // No need for fseek, since "a+" mode appends by default
+    if (fprintf(directoryFile, "%s %d %d\n", temp->name, temp->size, temp->firstBlock) < 0) {
+        perror("Error writing to file");
+        return;
+    }
+
+    fclose(directoryFile);
+    directoryFile = fopen("directory.txt", "r+"); // Open in read/write mode
+    if (directoryFile == NULL) {
+        perror("Error opening file");
+        return;
+    }
 }
 
 static void readDirectory() {
@@ -394,7 +455,7 @@ static void createFile(const char *name, int size)
     saveFile(newNode);
     directory->quantity++;
     directory->size += sizeSave;
-    printf("Archivo creado con éxito", name);
+    printf("Archivo creado con éxito %s\n", name);
 }
 
 // Función para escribir en el archivo
@@ -476,6 +537,7 @@ static void writeFile(const char *name, int offset, const char *data){
                 printf("Error: No hay suficiente espacio en el disco para escribir los datos.\n");
                 return;
             }
+            printf("Datos escritos con éxito en %s\n", name);
             break;
         }
         temp = temp->next;
@@ -484,9 +546,61 @@ static void writeFile(const char *name, int offset, const char *data){
     {
         printf("Error: El archivo no existe.\n");
     }
-    
 }
 
+static void deleteFile (const char *name){
+    
+    struct File *temp = directory->head;
+    while (temp != NULL)
+    {
+        if (strcmp(temp->name, name) == 0)
+        {
+            uint16_t block = temp->firstBlock;
+            while (block != 0x5F5F)
+            {
+                struct Block *newBlock = createBlockRef(block);
+                addBlockToList(newBlock);
+                uint16_t oldBlock = block;
+                block = FAT[block];
+                FAT[oldBlock] = 0x5F5F;
+                writeFAT(oldBlock, 0x5F5F);
+                
+            }
+            deleteFileFromList(temp);
+
+            FILE *tempFile = fopen("temp.txt", "w");
+            if (tempFile == NULL) {
+                perror("Error opening temporary file");
+                return;
+            }
+
+            char line[MAX_LINE_LENGTH];
+
+            // Read each line and write to temp file if it doesn't contain the target string
+            while (fgets(line, MAX_LINE_LENGTH, directoryFile) != NULL) {
+                if (strstr(line, name) == NULL) {
+                    fputs(line, tempFile);
+                }
+            }
+            fclose(directoryFile);
+            fclose(tempFile);
+            remove("directory.txt");              // Delete the original file
+            rename("temp.txt", "directory.txt"); // Rename the temp file to the original file name
+            directoryFile = fopen("directory.txt", "r+");
+            if (directoryFile == NULL) {
+                perror("Error opening file");
+                return;
+            }
+            printf("Archivo eliminado con éxito %s\n", name);
+            break;
+        }
+        temp = temp->next;
+    }
+    if (temp == NULL)
+    {
+        printf("Error: El archivo no existe.\n");
+    }
+}
 // // Función para imprimir la lista
 // static void printList(struct FileList *list)
 // {
