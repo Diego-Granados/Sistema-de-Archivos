@@ -1,0 +1,30 @@
++ Ejemplos de REALLOC
++ REALLOC Caso 1 prueba 1
+ALLOC A 10
+ALLOC B 40
+ALLOC C 30
+ALLOC D 20
+ALLOC E 20
+ALLOC F 50
+ALLOC G 40
+ALLOC H 60
+ALLOC I 20
+FREE C
+FREE E
+REALLOC B 20
+PRINT
+RESET
+#Salida esperada con SORTING_ALGORITHM 1
+#Assigned list:
+#Nombre: A, Desde: 0, Hasta: 10
+#Nombre: B, Desde: 10, Hasta: 30
+#Nombre: D, Desde: 80, Hasta: 100
+#Nombre: F, Desde: 120, Hasta: 170
+#Nombre: G, Desde: 170, Hasta: 210
+#Nombre: H, Desde: 210, Hasta: 270
+#Nombre: I, Desde: 270, Hasta: 290
+#Unassigned list:
+#Nombre: 0, Desde: 30, Hasta: 50
+#Nombre: 0, Desde: 50, Hasta: 80
+#Nombre: 0, Desde: 100, Hasta: 120
+#Nombre: 0, Desde: 290, Hasta: 1000
