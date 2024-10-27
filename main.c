@@ -102,6 +102,7 @@ int main(int argc, char *argv[])
   directory = createFileList();
   openFiles = createFileList();
   freeBlocks = createBlockList();
+  resetDirectory();
   resetFAT();
   resetDisk();
   initializeFAT();

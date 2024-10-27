@@ -235,7 +235,7 @@ static void deleteBlock(struct Block *nodeToDelete)
 
 void initializeFAT() {
     for (int i = 0; i < NUM_BLOCKS; i++) {
-        FAT[i] = 0x3030;
+        FAT[i] = 0x5F5F;
         struct Block *newBlock = createBlockRef(i);
         addBlockToList(newBlock);
     }
@@ -305,10 +305,10 @@ static void readDirectory() {
 
 // (i * BLOCK_SIZE + sizeof(uint16_t) * i + i)
 int resetDisk() {
-    // Create a buffer with 512 '0's
+    // Create a buffer with 512 '_'s
     char buffer[BLOCK_SIZE+sizeof(uint16_t)];
     for (int i = 0; i < (BLOCK_SIZE+sizeof(uint16_t)); i++) {
-        buffer[i] = '0';
+        buffer[i] = '_';
     }
 
     // Write 512 0xFF and a newline 2048 times
@@ -317,6 +317,23 @@ int resetDisk() {
         fputc('\n', disk);
     }
 }
+
+// Función para resetear el directorio
+void resetDirectory() {
+    fClose(directoryFile);
+    directoryFile = fopen("directory.txt", "w");
+    if (directoryFile == NULL) {
+        perror("Error opening file");
+        return;
+    }
+    fclose(directoryFile);
+    directoryFile = fopen("directory.txt", "r+");
+    if (directoryFile == NULL) {
+        perror("Error opening file");
+        return;
+    }
+}
+
 
 // Función para encontrar si hay un hueco en la memoria donde cabe el valor
 static void createFile(const char *name, int size)
@@ -352,8 +369,8 @@ static void createFile(const char *name, int size)
             FAT[freeBlock->location] = freeBlock->next->location;
             writeFAT(freeBlock->location, freeBlock->next->location);
         } else {
-            FAT[freeBlock->location] = 0x3030;
-            writeFAT(freeBlock->location, 0x3030);
+            FAT[freeBlock->location] = 0x5F5F;
+            writeFAT(freeBlock->location, 0x5F5F);
         }
         
         previousBlock = (freeBlock->location * BLOCK_SIZE + sizeof(uint16_t) * freeBlock->location + freeBlock->location) + BLOCK_SIZE;
@@ -397,12 +414,21 @@ static void writeFile(const char *name, int offset, const char *data){
                 printf("Error: El offset es mayor que el tamaño del archivo.\n");
                 return;
             }
-
+            if (dataSize == 0)
+            {
+                printf("Error: No hay datos para escribir.\n");
+                return;
+            }
+            if (dataSize > temp->size - offset)
+            {
+                printf("Error: No hay suficiente espacio para escribir los datos.\n");
+                return;
+            }
             int block = temp->firstBlock;
             // El offset puede ser mayor que un bloque, entonces se busca el bloque correcto
             int byteCount = BLOCK_SIZE; // Primero, byteCount se usa para llegar a la posición del bloque en el disco
             int blockOffset = 0;
-            while (block != 0x3030)
+            while (block != 0x5F5F)
             {
                 
                 if (byteCount >= offset)
@@ -739,7 +765,7 @@ static void writeFile(const char *name, int offset, const char *data){
 //     sortList(unassignedList); // Se ordena la lista
 // }
 
-// // Función para eliminar nodos no asignados y escribir '0' en la memoria
+// // Función para eliminar nodos no asignados y escribir '_' en la memoria
 // static void freeNodeMemory(struct File *unassignedNode, int size, int address)
 // {
 //     if (unassignedNode->size == 0)
@@ -750,7 +776,7 @@ static void writeFile(const char *name, int offset, const char *data){
 //     mergeMemory(unassignedNode);
 //     for (int i = 0; i < size; i++)
 //     {
-//         simulatedMemory[address + i] = '0';
+//         simulatedMemory[address + i] = '_';
 //     }
 // }
 
@@ -811,7 +837,7 @@ static void writeFile(const char *name, int offset, const char *data){
 //                         unassignedNode->size += remainderSize;    // Se actualiza el tamaño del hueco
 //                         unassignedNode->address -= remainderSize; // Se actualiza la dirección del hueco
 //                         // mergeMemory(unassignedNode);                                     // Se fusiona la memoria
-//                         freeNodeMemory(unassignedNode, current->size, current->address); // Se llama a esta función para escribir '0' en la memoria
+//                         freeNodeMemory(unassignedNode, current->size, current->address); // Se llama a esta función para escribir '_' en la memoria
 //                         for (int i = 0; i < current->size; i++)                          // Se escribe en la memoria
 //                         {
 //                             simulatedMemory[current->address + i] = current->name;
@@ -827,11 +853,11 @@ static void writeFile(const char *name, int offset, const char *data){
 //                 if (unassignedNode == NULL)
 //                 {
 //                     // Se añade un hueco después del nodo asignado
-//                     addValue(unassignedList, '0', current->address + newSize, current->size - newSize);
-//                     // Se escribe '0' en la memoria
+//                     addValue(unassignedList, '_', current->address + newSize, current->size - newSize);
+//                     // Se escribe '_' en la memoria
 //                     for (int i = 0; i < current->size - newSize; i++)
 //                     {
-//                         simulatedMemory[current->address + newSize + i] = '0';
+//                         simulatedMemory[current->address + newSize + i] = '_';
 //                     }
 //                     current->size = newSize;                // Se actualiza el tamaño
 //                     for (int i = 0; i < current->size; i++) // Se escribe en la memoria
@@ -905,7 +931,7 @@ static void writeFile(const char *name, int offset, const char *data){
 //                 { // Limpiar la memoria del bloque anterior
 //                     for (int i = 0; i < afterHoleNode->size; i++)
 //                     {
-//                         simulatedMemory[afterHoleNode->address + i] = '0';
+//                         simulatedMemory[afterHoleNode->address + i] = '_';
 //                     }
 //                 }
 //                 // Escribir en la memoria el valor que había en el bloque anterior
@@ -924,9 +950,9 @@ static void writeFile(const char *name, int offset, const char *data){
 //                 {
 //                     for (int i = 0; i < current->size; i++) // Se reinicia la memoria donde está el nodo actual
 //                     {
-//                         simulatedMemory[current->address + i] = '0';
+//                         simulatedMemory[current->address + i] = '_';
 //                     }
-//                     struct File *newUnassignedNode = addValue(unassignedList, '0', current->address, current->size); // Se añade un hueco donde está el nodo actual
+//                     struct File *newUnassignedNode = addValue(unassignedList, '_', current->address, current->size); // Se añade un hueco donde está el nodo actual
 //                     mergeMemory(newUnassignedNode);                                                                  // Se fusiona la memoria
 //                     deleteNode(assignedList, current);                                                               // Eliminar de la lista de asignados, ya que se insertó en la nueva posición
 
@@ -957,12 +983,12 @@ static void writeFile(const char *name, int offset, const char *data){
 //     {
 //         if (current->name == name)
 //         {
-//             struct File *newUnassignedNode = addValue(unassignedList, '0', current->address, current->size); // Se añade un hueco
+//             struct File *newUnassignedNode = addValue(unassignedList, '_', current->address, current->size); // Se añade un hueco
 //             mergeMemory(newUnassignedNode);                                                                  // Se fusiona la memoria
 //             printf("Memoria liberada para %c.\n", current->name);
 //             for (int i = 0; i < current->size; i++)
 //             {
-//                 simulatedMemory[current->address + i] = '0'; // Se reinicia la memoria
+//                 simulatedMemory[current->address + i] = '_'; // Se reinicia la memoria
 //             }
 //             deleteNode(assignedList, current); // Eliminar de la lista
 //             return;
@@ -1011,5 +1037,5 @@ static void writeFile(const char *name, int offset, const char *data){
 //     unassignedList = createList(&unassignedList);
 //     assignedList = createList(&assignedList);
 //     startMemory();
-//     addValue(unassignedList, '0', 0, MEMORY_SIZE);
+//     addValue(unassignedList, '_', 0, MEMORY_SIZE);
 // }
