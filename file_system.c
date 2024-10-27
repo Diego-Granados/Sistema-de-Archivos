@@ -15,7 +15,6 @@
 struct File
 {
     char *name; // El nombre del archivo
-    int location;       // Dirección
     int size;          // Tamaño
     uint16_t firstBlock; // Puntero al próximo bloque
     struct File *prev; // Puntero al nodo anterior
@@ -86,7 +85,7 @@ static struct BlockList* createBlockList()
 }
 
 // Función para crear un nodo
-static struct File *createFileRef(const char *name, int address, int size, uint16_t firstBlock)  
+static struct File *createFileRef(const char *name, int size, uint16_t firstBlock)  
 {
     // Asignar memoria al nodo
     struct File *newFile = (struct File *)malloc(sizeof(struct File));
@@ -101,8 +100,7 @@ static struct File *createFileRef(const char *name, int address, int size, uint1
         printf("Error de asignación de memoria para el nodo!\n");
         exit(1);
     }
-    strcpy(newFile->name, name);
-    newFile->location = address; // Todavía no hay una dirección asignada
+    strcpy(newFile->name, name); // Todavía no hay una dirección asignada
     newFile->size = size;
     newFile->firstBlock = firstBlock;
     newFile->next = NULL;
@@ -280,7 +278,7 @@ static void saveFile(struct File *temp){
         perror("Error seeking to the end of file");
     }
     
-    fprintf(directoryFile, "%s %d %d %d\n", temp->name, temp->location, temp->size, temp->firstBlock);
+    fprintf(directoryFile, "%s %d %d %d\n", temp->name, temp->size, temp->firstBlock);
 }
 
 static void readDirectory() {
@@ -290,13 +288,12 @@ static void readDirectory() {
     }
 
     char name[50];
-    int location;
     int size;
     int firstBlock;
     directory->quantity = 0;
     directory->size = 0;
-    while (fscanf(directoryFile, "%s %d %d %d\n", name, &location, &size, &firstBlock) != EOF) {
-        struct File *temp = createFileRef(name, location, size, firstBlock);
+    while (fscanf(directoryFile, "%s %d %d\n", name, &size, &firstBlock) != EOF) {
+        struct File *temp = createFileRef(name, size, firstBlock);
         addFileToList(temp);
         directory->quantity++;
         directory->size += size;
@@ -320,7 +317,7 @@ int resetDisk() {
 
 // Función para resetear el directorio
 void resetDirectory() {
-    fClose(directoryFile);
+    fclose(directoryFile);
     directoryFile = fopen("directory.txt", "w");
     if (directoryFile == NULL) {
         perror("Error opening file");
@@ -338,7 +335,8 @@ void resetDirectory() {
 // Función para encontrar si hay un hueco en la memoria donde cabe el valor
 static void createFile(const char *name, int size)
 {
-    struct Block *freeBlock = freeBlocks->head;
+    // Se usa para iterar por los bloques.
+    struct Block *freeBlock = freeBlocks->head; // Se obtiene el primer bloque libre
 
     if (size > (freeBlocks->quantity * BLOCK_SIZE) || directory->quantity == MAX_FILES || (directory->size + size) > DISK_SIZE || freeBlock == NULL)
     {
@@ -358,7 +356,7 @@ static void createFile(const char *name, int size)
         file = file->next;
     }
 
-    struct File *newNode = createFileRef(name, freeBlock->location, size, freeBlock->location / BLOCK_SIZE);
+    struct File *newNode = createFileRef(name, size, freeBlock->location);
     uint16_t previousBlock = 0;
     int sizeSave = size;
     struct Block *temp = NULL;
@@ -373,9 +371,9 @@ static void createFile(const char *name, int size)
             writeFAT(freeBlock->location, 0x5F5F);
         }
         
+        // La posición donde se va a escribir el puntero en el disco es la dirección del bloque * el tamaño del bloque + el tamaño de un puntero * el número del bloque + la dirección del bloque
         previousBlock = (freeBlock->location * BLOCK_SIZE + sizeof(uint16_t) * freeBlock->location + freeBlock->location) + BLOCK_SIZE;
-        temp = freeBlock;
-        freeBlock = freeBlock->next;
+        
 
         // Seek to the calculated position
         if (fseek(disk, previousBlock, SEEK_SET) != 0) {
@@ -384,11 +382,12 @@ static void createFile(const char *name, int size)
         }
 
         // Write the 2-byte number to the file
-        if (fwrite(&freeBlock->location, sizeof(uint16_t), 1, disk) != 1) {
+        if (fwrite(&FAT[freeBlock->location], sizeof(uint16_t), 1, disk) != 1) {
             perror("Error writing to file");
             exit(EXIT_FAILURE);
         }
-        
+        temp = freeBlock;
+        freeBlock = freeBlock->next;
         deleteBlock(temp);
     }
     addFileToList(newNode);
@@ -397,8 +396,6 @@ static void createFile(const char *name, int size)
     directory->size += sizeSave;
     printf("Archivo creado con éxito", name);
 }
-
-
 
 // Función para escribir en el archivo
 static void writeFile(const char *name, int offset, const char *data){
@@ -409,28 +406,27 @@ static void writeFile(const char *name, int offset, const char *data){
         if (strcmp(temp->name, name) == 0)
         {
             int dataSize = strlen(data);
+            // Se valida si el offset más lo que se va a escribir es mayor que el tamaño del archivo 
             if ((offset+dataSize) > temp->size)
             {
                 printf("Error: El offset es mayor que el tamaño del archivo.\n");
                 return;
             }
+            // Valida que los datos no vengan vacíos
             if (dataSize == 0)
             {
                 printf("Error: No hay datos para escribir.\n");
                 return;
             }
-            if (dataSize > temp->size - offset)
-            {
-                printf("Error: No hay suficiente espacio para escribir los datos.\n");
-                return;
-            }
+            // Se busca el bloque donde se va a escribir
             int block = temp->firstBlock;
             // El offset puede ser mayor que un bloque, entonces se busca el bloque correcto
-            int byteCount = BLOCK_SIZE; // Primero, byteCount se usa para llegar a la posición del bloque en el disco
-            int blockOffset = 0;
+            int byteCount = BLOCK_SIZE; // Primero, byteCount se usa para llegar a la posición del bloque correcto con base en el offset en el disco
+            int blockOffset = 0; // Es el desplazamiento dentro del bloque correcto para empezar a escribir los datos
+            // Se busca el bloque correcto
             while (block != 0x5F5F)
             {
-                
+                // Si byteCount es mayor o igual al offset, se encontró el bloque 
                 if (byteCount >= offset)
                 {
                     
@@ -441,18 +437,21 @@ static void writeFile(const char *name, int offset, const char *data){
                 block = FAT[block];
                 byteCount += BLOCK_SIZE;
             }
-            if (block == 0xFFFF)
+            // Si el archivo no tiene suficientes bloques asignados
+            if (block == 0x5F5F) 
             {
                 printf("Error: El archivo no tiene suficientes bloques asignados.\n");
                 return;
             }
-
+            // Aca se escriben solo los bytes necesarios
+            // Aquí, byteCount se usa para la cantidad de bytes que se van a escribir en el bloque
             if (dataSize < byteCount) {
                 byteCount = dataSize;
             }
+            
             int blockPosition = (block * BLOCK_SIZE + sizeof(uint16_t) * block + block) + blockOffset;
-            int dataPosition = 0;
-            while (dataSize > 0) {
+            int dataPosition = 0; // Es un puntero a la posición de los datos que se van a escribir
+            while (dataSize > 0 && block != 0x5F5F) {
                 if (fseek(disk, blockPosition, SEEK_SET) != 0)
                 {
                     perror("Error seeking in file");
@@ -463,15 +462,19 @@ static void writeFile(const char *name, int offset, const char *data){
                     perror("Error writing to file");
                     exit(EXIT_FAILURE);
                 }
-                block = FAT[block];
-                blockPosition = block * BLOCK_SIZE + sizeof(uint16_t) * block + block;
-                dataPosition += byteCount;
-                dataSize -= byteCount;
-                if (dataSize < byteCount) {
+                block = FAT[block]; // Siguiente bloque
+                blockPosition = block * BLOCK_SIZE + sizeof(uint16_t) * block + block; // Posición del siguiente bloque
+                dataPosition += byteCount; // Actualiza puntero de los datos
+                dataSize -= byteCount; // Resta la cantidad de datos que se escribieron
+                if (dataSize < BLOCK_SIZE) { 
                     byteCount = dataSize;
                 } else {
                     byteCount = BLOCK_SIZE;
                 }
+            }
+            if (dataSize > 0) {
+                printf("Error: No hay suficiente espacio en el disco para escribir los datos.\n");
+                return;
             }
             break;
         }
