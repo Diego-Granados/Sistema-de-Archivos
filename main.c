@@ -112,6 +112,8 @@ int main(int argc, char *argv[])
   createFile("file2.txt", 2000);
   createFile("file3.txt", 1000);
   deleteFile("file2.txt");
+  createFile("file4.txt", 2500);
+  listFiles();
   // writeFile("file1.txt", 0, "Hola mundo");
   fclose(disk);
   fclose(FATFile);
