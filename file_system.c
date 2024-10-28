@@ -704,6 +704,22 @@ static void deleteFile(const char *name)
         printf("Error: El archivo no existe.\n");
     }
 }
+
+static void listFiles(){
+
+    if (directory->head == NULL)
+    {
+        printf("No hay archivos en el directorio.\n");
+        return;
+    }
+    printf("Directorio: \n");
+    struct File *temp = directory->head;
+    while (temp != NULL)
+    {
+        printf("Nombre: %s, Tamaño: %d bytes, Primer bloque: %d\n", temp->name, temp->size, temp->firstBlock);
+        temp = temp->next;
+    }
+}
 // // Función para imprimir la lista
 // static void printList(struct FileList *list)
 // {
