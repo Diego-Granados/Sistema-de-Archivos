@@ -1,271 +1,40 @@
-# Ejemplos de la tarea
-+ Simulacion de fragmentacion
-ALLOC A 100
-ALLOC B 200
-FREE A
-ALLOC C 50
-PRINT
-+ Simulacion de fuga de memoria
-ALLOC D 300
-ALLOC E 400
-+ No liberamos D
-FREE E
-PRINT
-RESET
++ Pruebas
++ Ejemplo de la tarea
 
-+ Ejemplo de merge memory
-+ Hay un hueco antes y despues de
-+ un espacio de memoria que se libera
-ALLOC A 10
-ALLOC B 40
-ALLOC C 30
-ALLOC D 20
-ALLOC E 50
-
-FREE B
-FREE D
-PRINT
-FREE C
-PRINT
 RESET
+CREATE archivo1.txt 1000
+WRITE archivo1.txt 0 "Hola, mundo"
+READ archivo1.txt 0 11
+LIST
 # Salida esperada
-# Deberían quedar dos huecos, uno
-# en la posición 10 con un tamaño de 90 y 
-# otro hueco en hasta el final de la memoria.
-#--------------------------------
-+ Ejemplos de REALLOC
-+ REALLOC Caso 1 prueba 1
-ALLOC A 10
-ALLOC B 40
-ALLOC C 30
-ALLOC D 20
-ALLOC E 20
-ALLOC F 50
-ALLOC G 40
-ALLOC H 60
-ALLOC I 20
-FREE C
-FREE E
-REALLOC B 20
-PRINT
+# Directorio
+# Nombre: archivo1.txt, Tamaño: 1000 bytes, Primer bloque: 0
+DELETE archivo1.txt
+LIST
+
++ Prueba de eliminar archivo
 RESET
-#Salida esperada con SORTING_ALGORITHM 1
-#Assigned list:
-#Nombre: A, Desde: 0, Hasta: 10
-#Nombre: B, Desde: 10, Hasta: 30
-#Nombre: D, Desde: 80, Hasta: 100
-#Nombre: F, Desde: 120, Hasta: 170
-#Nombre: G, Desde: 170, Hasta: 210
-#Nombre: H, Desde: 210, Hasta: 270
-#Nombre: I, Desde: 270, Hasta: 290
-#Unassigned list:
-#Nombre: 0, Desde: 30, Hasta: 80
-#Nombre: 0, Desde: 100, Hasta: 120
-#Nombre: 0, Desde: 290, Hasta: 1000
-#-------------------------
-+ REALLOC Caso 2 prueba 1
-ALLOC A 10
-ALLOC B 40
-ALLOC C 30
-ALLOC D 20
-ALLOC E 50
-REALLOC E 100
-PRINT
+CREATE file1.txt 1500
+CREATE file2.txt 2000
+CREATE file3.txt 1000
+LIST
+DELETE file2.txt
+CREATE file4.txt 2500
+LIST
+
++ Prueba para acceder a un archivo que no existe
+READ file2.txt 0 10
+WRITE file2.txt 0 "Hola, mundo"
+
++ Prueba para leer algo con un offset
+WRITE file1.txt 0 "Esto no se lee, Hola, Mundo"
+READ file1.txt 16 11
+
++ Prueba para leer más allá del tamaño del archivo.
+READ file1.txt 1400 200
+READ file1.txt 0 1600
+
++ Prueba cuando falta espacio para un archivo
 RESET
-#Salida esperada con SORTING_ALGORITHM 1
-#Nombre: A, Desde: 0, Hasta: 10
-#Nombre: B, Desde: 10, Hasta: 50
-#Nombre: C, Desde: 50, Hasta: 80
-#Nombre: D, Desde: 80, Hasta: 100
-#Nombre: E, Desde: 100, Hasta: 200
-#Unassigned list:
-#Nombre: 0, Desde: 200, Hasta: 1000
-#---------------------------------------
-+ REALLOC Caso 2 prueba 2
-ALLOC A 10
-ALLOC B 40
-ALLOC C 30
-ALLOC D 20
-ALLOC E 50
-ALLOC F 50
-ALLOC G 50
-FREE F
-REALLOC E 80
-PRINT
-RESET
-#Salida esperada con SORTING_ALGORITHM 1
-#Nombre: A, Desde: 0, Hasta: 10
-#Nombre: B, Desde: 10, Hasta: 50
-#Nombre: C, Desde: 50, Hasta: 80
-#Nombre: D, Desde: 80, Hasta: 100
-#Nombre: E, Desde: 100, Hasta: 180
-#Nombre: G, Desde: 200, Hasta: 250
-#Unassigned list:
-#Nombre: 0, Desde: 180, Hasta: 200
-#Nombre: 0, Desde: 250, Hasta: 1000
-#---------------------------------
-+ REALLOC Caso 3 prueba 1
-ALLOC A 10
-ALLOC B 40
-ALLOC C 30
-ALLOC D 20
-ALLOC E 50
-ALLOC F 50
-FREE D
-REALLOC E 60
-PRINT
-RESET
-#Salida esperada con SORTING_ALGORITHM 1
-#Assigned list:
-#Nombre: A, Desde: 0, Hasta: 10
-#Nombre: B, Desde: 10, Hasta: 50
-#Nombre: C, Desde: 50, Hasta: 80
-#Nombre: E, Desde: 90, Hasta: 150
-#Nombre: F, Desde: 150, Hasta: 200
-#Unassigned list:
-#Nombre: 0, Desde: 80, Hasta: 90
-#Nombre: 0, Desde: 200, Hasta: 1000
-#----------------------------------
-+ REALLOC Caso 3 prueba 2
-ALLOC A 10
-ALLOC B 40
-ALLOC C 30
-ALLOC D 20
-ALLOC E 50
-ALLOC F 50
-ALLOC G 40
-ALLOC H 60
-ALLOC I 20
-FREE D
-FREE G
-REALLOC E 60
-REALLOC H 100
-PRINT
-RESET
-#Salida esperada con SORTING_ALGORITHM 1
-Assigned list:
-#Nombre: A, Desde: 0, Hasta: 10
-#Nombre: B, Desde: 10, Hasta: 50
-#Nombre: C, Desde: 50, Hasta: 80
-#Nombre: E, Desde: 90, Hasta: 150
-#Nombre: F, Desde: 150, Hasta: 200
-#Nombre: H, Desde: 200, Hasta: 300
-#Nombre: I, Desde: 300, Hasta: 320
-#Unassigned list:
-#Nombre: 0, Desde: 80, Hasta: 90
-#Nombre: 0, Desde: 320, Hasta: 1000
-#------------------------------------
-+ REALLOC Caso 4 prueba 1
-ALLOC A 10
-ALLOC B 40
-ALLOC C 30
-ALLOC D 20
-ALLOC E 30
-ALLOC F 50
-ALLOC G 40
-ALLOC H 60
-ALLOC I 20
-FREE C
-FREE E
-REALLOC D 60
-PRINT
-RESET
-#Salida esperada con SORTING_ALGORITHM 1
-#Assigned list:
-#Nombre: A, Desde: 0, Hasta: 10
-#Nombre: B, Desde: 10, Hasta: 50
-#Nombre: D, Desde: 50, Hasta: 110
-#Nombre: F, Desde: 130, Hasta: 180
-#Nombre: G, Desde: 180, Hasta: 220
-#Nombre: H, Desde: 220, Hasta: 280
-#Nombre: I, Desde: 280, Hasta: 300
-#Unassigned list:
-#Nombre: 0, Desde: 110, Hasta: 130
-#Nombre: 0, Desde: 300, Hasta: 1000
-#-----------------------------------
-+ REALLOC Caso 4 prueba 2
-ALLOC A 10
-ALLOC B 40
-ALLOC C 30
-ALLOC D 20
-ALLOC E 20
-ALLOC F 50
-ALLOC G 40
-ALLOC H 60
-ALLOC I 20
-FREE C
-FREE E
-REALLOC D 70
-PRINT
-RESET
-#Salida esperada con SORTING_ALGORITHM 1
-# Assigned list:
-# Nombre: A, Desde: 0, Hasta: 10
-# Nombre: B, Desde: 10, Hasta: 50
-# Nombre: D, Desde: 50, Hasta: 120
-# Nombre: F, Desde: 120, Hasta: 170
-# Nombre: G, Desde: 170, Hasta: 210
-# Nombre: H, Desde: 210, Hasta: 270
-# Nombre: I, Desde: 270, Hasta: 290
-# Unassigned list:
-# Nombre: 0, Desde: 290, Hasta: 1000
-#----------------------------------
-+ REALLOC Caso 5 prueba 1
-ALLOC A 10
-ALLOC B 40
-ALLOC C 30
-ALLOC D 20
-ALLOC E 20
-ALLOC F 50
-ALLOC G 40
-ALLOC H 60
-ALLOC I 30
-FREE C
-FREE E
-REALLOC B 400
-PRINT
-RESET
-#Salida esperada con SORTING_ALGORITHM 1
-#Assigned list:
-#Nombre: A, Desde: 0, Hasta: 10
-#Nombre: D, Desde: 80, Hasta: 100
-#Nombre: F, Desde: 120, Hasta: 170
-#Nombre: G, Desde: 170, Hasta: 210
-#Nombre: H, Desde: 210, Hasta: 270
-#Nombre: I, Desde: 270, Hasta: 300
-#Nombre: B, Desde: 300, Hasta: 700
-#Nnassigned list:
-#Nombre: 0, Desde: 10, Hasta: 80
-#Nombre: 0, Desde: 100, Hasta: 120
-#Nombre: 0, Desde: 700, Hasta: 1000
-#-------------------------------
-+ REALLOC Caso 6 prueba 1
-ALLOC A 10
-ALLOC B 40
-ALLOC C 30
-ALLOC D 20
-ALLOC E 20
-ALLOC F 50
-ALLOC G 40
-ALLOC H 60
-ALLOC I 20
-FREE C
-FREE E
-REALLOC D 7000
-PRINT
-RESET
-#Salida esperada con SORTING_ALGORITHM 1
-#Error: No hay espacio suficiente para 
-#reasignar D
-#Nombre: A, Desde: 0, Hasta: 10
-#Nombre: B, Desde: 10, Hasta: 50
-#Nombre: D, Desde: 80, Hasta: 100
-#Nombre: F, Desde: 120, Hasta: 170
-#Nombre: G, Desde: 170, Hasta: 210
-#Nombre: H, Desde: 210, Hasta: 270
-#Nombre: I, Desde: 270, Hasta: 290
-#Unassigned list:   
-#Nombre: 0, Desde: 50, Hasta: 80
-#Nombre: 0, Desde: 100, Hasta: 120
-#Nombre: 0, Desde: 290, Hasta: 1000
-#------------------------------------
+CREATE file1.txt 1048500
+CREATE file2.txt 1000
