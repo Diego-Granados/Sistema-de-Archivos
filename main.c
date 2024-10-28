@@ -10,45 +10,66 @@
 // Funcion para procesar cada linea
 void processLine(const char *instruction)
 {
-    if (instruction[0] == '\0' || strlen(instruction) == 0) {
+    // Check if the line is empty or contains only a newline character
+    if (instruction[0] == '\0' || strlen(instruction) == 0)
+    {
+        printf(" \n"); // Print a space and a newline for empty lines
         return;
     }
 
-    if (instruction[0] == '#') {
+    // Skip lines starting with '#'
+    if (instruction[0] == '#')
+    {
         return;
     }
 
-    // Print lines that start with '+'
-    if (instruction[0] == '+') {
-        printf("%s\n", instruction + 1);  // Print without the '+'
+    // Print lines that start with '+', excluding the '+'
+    if (instruction[0] == '+')
+    {
+        printf("%s\n", instruction + 1); // Print without the '+'
         return;
     }
 
     char command[10], name[MAX_FILENAME], data[MAX_CONTENT_SIZE];
     int offset, size, length;
-    
-    if (sscanf(instruction, "CREATE %s %d", name, &size) == 2) {
+
+    if (sscanf(instruction, "CREATE %s %d", name, &size) == 2)
+    {
         createFile(name, size);
-    } else if (sscanf(instruction, "WRITE %s %d \"%[^\"]\"", name, &offset, data) == 3) {
+    }
+    else if (sscanf(instruction, "WRITE %s %d \"%[^\"]\"", name, &offset, data) == 3)
+    {
         writeFile(name, offset, data);
-    } else if (sscanf(instruction, "READ %s %d %d", name, &offset, &length) == 3) {
+    }
+    else if (sscanf(instruction, "READ %s %d %d", name, &offset, &length) == 3)
+    {
         readFile(name, offset, length);
-    } else if (strncmp(instruction, "LIST", 4) == 0) {
+    }
+    else if (strncmp(instruction, "LIST", 4) == 0)
+    {
         listFiles();
-    } else if (strncmp(instruction, "RESET", 5) == 0) {
+    }
+    else if (strncmp(instruction, "RESET", 5) == 0)
+    {
         reset();
-    } else if (strncmp(instruction, "READ", 4) == 0) {
+    }
+    else if (strncmp(instruction, "READ", 4) == 0)
+    {
         read();
-    } else if (sscanf(instruction, "DELETE %s", name) == 1) {
+    }
+    else if (sscanf(instruction, "DELETE %s", name) == 1)
+    {
         deleteFile(name);
-    } else {
+    }
+    else
+    {
         printf("Error: Unknown instruction '%s'\n", instruction);
     }
 }
 
-    // Funcion para leer las lineas del archivo
+// Funcion para leer las lineas del archivo
 void readLinesFromFile(const char *filename)
-    {
+{
     FILE *file = fopen(filename, "r");
     if (file == NULL)
     {
@@ -57,8 +78,9 @@ void readLinesFromFile(const char *filename)
     }
 
     char instruction[256];
-    while (fgets(instruction, sizeof(instruction), file)) {
-        instruction[strcspn(instruction, "\n")] = '\0';  // Remove newline character
+    while (fgets(instruction, sizeof(instruction), file))
+    {
+        instruction[strcspn(instruction, "\n")] = '\0'; // Remove newline character
         processLine(instruction);
     }
 
@@ -74,17 +96,20 @@ int main(int argc, char *argv[])
     // }
 
     disk = fopen("disk.txt", "r+b"); // Use "r+b" to read/write in binary mode
-    if (disk == NULL) {
+    if (disk == NULL)
+    {
         perror("Error opening file");
         return EXIT_FAILURE;
     }
     FATFile = fopen("FAT.txt", "r+b");
-    if (FATFile == NULL) {
+    if (FATFile == NULL)
+    {
         perror("Error opening file");
         return EXIT_FAILURE;
     }
     directoryFile = fopen("directory.txt", "r+");
-    if (directoryFile == NULL) {
+    if (directoryFile == NULL)
+    {
         perror("Error opening file");
         return EXIT_FAILURE;
     }
@@ -113,10 +138,6 @@ int main(int argc, char *argv[])
     fclose(disk);
     fclose(FATFile);
     fclose(directoryFile);
-
-
-
-
 
     return 0;
 }

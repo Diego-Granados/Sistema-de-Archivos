@@ -1,18 +1,22 @@
-+ Pruebas
-+ Ejemplo de la tarea
-
++Pruebas
++Ejemplo de la Tarea
 RESET
 CREATE archivo1.txt 1000
 WRITE archivo1.txt 0 "Hola, mundo"
 READ archivo1.txt 0 11
 LIST
-# Salida esperada
-# Directorio
-# Nombre: archivo1.txt, Tamaño: 1000 bytes, Primer bloque: 0
 DELETE archivo1.txt
 LIST
+# Salida esperada
+# Archivo creado con exito archivo1.txt
+# Datos escritos con exito en archivo1.txt
+# Hola, mundo
+# Directorio:
+# Nombre: archivo1.txt, Tamano: 1000 bytes, Primer bloque: 0
+# Archivo eliminado con exito archivo1.txt
+# No hay archivos en el directorio.
 
-+ Prueba de eliminar archivo
++Prueba de eliminar archivo
 RESET
 CREATE file1.txt 1500
 CREATE file2.txt 2000
@@ -21,23 +25,115 @@ LIST
 DELETE file2.txt
 CREATE file4.txt 2500
 LIST
+# Salida esperada
+# Archivo creado con exito file1.txt
+# Archivo creado con exito file2.txt
+# Archivo creado con exito file3.txt
+# Directorio:
+# Nombre: file1.txt, Tamano: 1500 bytes, Primer bloque: 0
+# Nombre: file2.txt, Tamano: 2000 bytes, Primer bloque: 3
+# Nombre: file3.txt, Tamano: 1000 bytes, Primer bloque: 7
+# Archivo eliminado con exito file2.txt
+# Archivo creado con exito file4.txt
+# Directorio:
+# Nombre: file1.txt, Tamano: 1500 bytes, Primer bloque: 0
+# Nombre: file3.txt, Tamano: 1000 bytes, Primer bloque: 7
+# Nombre: file4.txt, Tamano: 2500 bytes, Primer bloque: 3
 
-+ Prueba para acceder a un archivo que no existe
++Prueba para acceder a un archivo que no existe
 READ file2.txt 0 10
 WRITE file2.txt 0 "Hola, mundo"
+# Salida esperada
+# Error: El archivo no existe.
+# Error: El archivo no existe.
 
-+ Prueba para leer algo con un offset
++Prueba para leer algo con un offset
 WRITE file1.txt 0 "Esto no se lee, Hola, Mundo"
 READ file1.txt 16 11
+# Salida esperada
+# Datos escritos con exito en file1.txt
+# Hola, Mundo
 
-
-+ Prueba para leer más allá del tamaño del archivo.
++Prueba para leer mas alla del tamano del archivo.
 RESET
 CREATE file1.txt 1500
 READ file1.txt 1400 200
 READ file1.txt 0 1600
+# Salida esperada
+# Archivo creado con exito file1.txt
+# Error: El offset es mayor o igual al tamano del archivo.
+# Error: El offset es mayor o igual al tamano del archivo.
 
-+ Prueba cuando falta espacio para un archivo
++Prueba cuando falta espacio para un archivo
 RESET
 CREATE file1.txt 1044400
 CREATE file2.txt 1000
+# Salida esperada
+# Archivo creado con exito file1.txt
+# No hay suficiente espacio para el archivo
+
+
++Prueba de sobreescritura
+RESET
+CREATE archivo1.txt 100
+WRITE archivo1.txt 0 "Hola, mundo"
+WRITE archivo1.txt 5 " amigo"
+READ archivo1.txt 0 11
+# Salida esperada
+# Archivo creado con exito archivo1.txt
+# Datos escritos con exito en archivo1.txt
+# Datos escritos con exito en archivo1.txt
+# Hola, amigo
+
++Prueba escritura y lectura en multiples bloques
+CREATE bigfile.txt 3000
+WRITE bigfile.txt 0 "Primer bloque."
+WRITE bigfile.txt 20 "Segundo bloque."
+WRITE bigfile.txt 40 "Tercer bloque."
+READ bigfile.txt 0 3000
+# Resultado esperado
+# Archivo creado con exito bigfile.txt
+# Datos escritos con exito en bigfile.txt
+# Datos escritos con exito en bigfile.txt
+# Datos escritos con exito en bigfile.txt
+# Primer bloque.______Segundo bloque._____Tercer bloque.__________
+
+
++Prueba para crear archivo con nombre duplicado
+RESET
+CREATE duplicate.txt 500
+CREATE duplicate.txt 1000
+# Resultado esperado
+#Archivo creado con exito duplicate.txt
+#El archivo ya existe
+
+
++Prueba de lectura de contenido sin escribir previamente
+RESET
+CREATE emptyfile.txt 500
+READ emptyfile.txt 0 100
+# Salida esperada
+# Archivo creado con exito emptyfile.txt
+# No hay informacion en el archivo.
+
+# Prueba de escritura y lectura de caracteres especiales
+RESET
+CREATE specialfile.txt 500
+WRITE specialfile.txt 10 "!@#$%^&*()_+[];'.,<>?:{}"
+READ specialfile.txt 0 50
+# Salida esperada
+# Archivo creado con exito specialfile.txt
+# Datos escritos con exito en specialfile.txt
+# __________!@#$%^&*()_+[];'.,<>?:{}________________
+
++Prueba de escritura y lectura con límites en los tamaños
+RESET
+CREATE limite.txt 1024
+WRITE limite.txt 1023 "X"
+READ limite.txt 1023 1
+WRITE limite.txt 1024 "Y"
+# Resultado esperado
+# Archivo creado con exito limite.txt
+# Datos escritos con exito en limite.txt
+# X
+# Error: El offset es mayor que el tamano del archivo.
