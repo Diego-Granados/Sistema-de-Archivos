@@ -8,18 +8,17 @@
 #define NUM_BLOCKS 2048
 #define MAX_LINE_LENGTH 1024
 
-
 // Vamos a usar para los archivos lo de la lista enlazada y para los bloques libres el counting
 
 // Structure for the node that contains the key and the value
 // Struct para los nodos de las listas.
 struct File
 {
-    char *name; // El nombre del archivo
-    int size;          // Tamaño
+    char *name;          // El nombre del archivo
+    int size;            // Tamaño
     uint16_t firstBlock; // Puntero al próximo bloque
-    struct File *prev; // Puntero al nodo anterior
-    struct File *next; // Puntero al próximo nodo
+    struct File *prev;   // Puntero al nodo anterior
+    struct File *next;   // Puntero al próximo nodo
 };
 
 // Struct para la lista
@@ -32,9 +31,9 @@ struct FileList
 };
 
 // Función para crear una lista
-static struct FileList* createFileList()
+static struct FileList *createFileList()
 {
-    struct FileList* list = (struct FileList *)malloc(sizeof(struct FileList)); // Asignar memoria para la lista
+    struct FileList *list = (struct FileList *)malloc(sizeof(struct FileList)); // Asignar memoria para la lista
     if (list == NULL)
     {
         printf("Error de asignación de memoria para la lista!\n");
@@ -67,11 +66,11 @@ static struct BlockList *freeBlocks = NULL;
 static uint16_t FAT[NUM_BLOCKS];
 
 // Open the file
-FILE *disk; 
+FILE *disk;
 FILE *FATFile;
-FILE * directoryFile;
+FILE *directoryFile;
 // Función para crear una lista
-static struct BlockList* createBlockList()
+static struct BlockList *createBlockList()
 {
     struct BlockList *list = (struct BlockList *)malloc(sizeof(struct BlockList)); // Asignar memoria para la lista
     if (list == NULL)
@@ -86,7 +85,7 @@ static struct BlockList* createBlockList()
 }
 
 // Función para crear un nodo
-static struct File *createFileRef(const char *name, int size, uint16_t firstBlock)  
+static struct File *createFileRef(const char *name, int size, uint16_t firstBlock)
 {
     // Asignar memoria al nodo
     struct File *newFile = (struct File *)malloc(sizeof(struct File));
@@ -97,7 +96,8 @@ static struct File *createFileRef(const char *name, int size, uint16_t firstBloc
     }
     // Inicializar el nodo
     newFile->name = malloc(strlen(name) + 1); // Allocate memory for the string + null terminator
-    if (newFile->name == NULL) {
+    if (newFile->name == NULL)
+    {
         printf("Error de asignación de memoria para el nodo!\n");
         exit(1);
     }
@@ -140,7 +140,6 @@ static void *addFileToList(struct File *newNode)
         newNode->prev = directory->tail;
         directory->tail->next = newNode;
         directory->tail = newNode;
-        
     }
 }
 
@@ -275,75 +274,89 @@ static void deleteFileFromList(struct File *nodeToDelete)
     free(nodeToDelete); // Se libera la memoria
 }
 
-void initializeFAT() {
-    for (int i = 0; i < NUM_BLOCKS; i++) {
+void initializeFAT()
+{
+    for (int i = 0; i < NUM_BLOCKS; i++)
+    {
         FAT[i] = 0x5F5F;
         struct Block *newBlock = createBlockRef(i);
         addBlockToList(newBlock);
     }
 }
 
-static void writeFAT(uint16_t block, uint16_t value) {
+static void writeFAT(uint16_t block, uint16_t value)
+{
     int position = (block * sizeof(uint16_t));
-    if (fseek(FATFile, position, SEEK_SET) != 0) {
+    if (fseek(FATFile, position, SEEK_SET) != 0)
+    {
         perror("Error seeking in file");
         exit(EXIT_FAILURE);
     }
 
-    if (fwrite(&value, sizeof(uint16_t), 1, FATFile) != 1) {
+    if (fwrite(&value, sizeof(uint16_t), 1, FATFile) != 1)
+    {
         perror("Error writing to file");
         exit(EXIT_FAILURE);
     }
 }
 
-static void readFAT() {
-    if (fseek(FATFile, 0, SEEK_SET) != 0) {
+static void readFAT()
+{
+    if (fseek(FATFile, 0, SEEK_SET) != 0)
+    {
         perror("Error seeking in file");
         exit(EXIT_FAILURE);
     }
 
-    if (fread(FAT, sizeof(uint16_t), NUM_BLOCKS, FATFile) != NUM_BLOCKS) {
+    if (fread(FAT, sizeof(uint16_t), NUM_BLOCKS, FATFile) != NUM_BLOCKS)
+    {
         perror("Error reading from file");
         exit(EXIT_FAILURE);
     }
 }
 
-static void resetFAT(){
+static void resetFAT()
+{
     // Write the FAT to the file
     initializeFAT();
 
-    if (fwrite(FAT, sizeof(uint16_t), NUM_BLOCKS, FATFile) != NUM_BLOCKS) {
+    if (fwrite(FAT, sizeof(uint16_t), NUM_BLOCKS, FATFile) != NUM_BLOCKS)
+    {
         perror("Error writing to file");
         exit(EXIT_FAILURE);
     }
 }
 
-
-
-static void saveFile(struct File *temp){
+static void saveFile(struct File *temp)
+{
     fclose(directoryFile);
     directoryFile = fopen("directory.txt", "a+"); // Open in read/append mode
-    if (directoryFile == NULL) {
+    if (directoryFile == NULL)
+    {
         perror("Error opening file");
         return;
     }
 
     // No need for fseek, since "a+" mode appends by default
-    if (fprintf(directoryFile, "%s %d %d\n", temp->name, temp->size, temp->firstBlock) < 0) {
+    if (fprintf(directoryFile, "%s %d %d\n", temp->name, temp->size, temp->firstBlock) < 0)
+    {
         perror("Error writing to file");
         return;
     }
 
     fclose(directoryFile);
     directoryFile = fopen("directory.txt", "r+"); // Open in read/write mode
-    if (directoryFile == NULL) {
+    if (directoryFile == NULL)
+    {
         perror("Error opening file");
         return;
     }
 }
 
-static void readDirectory() {
-    if (fseek(directoryFile, 0, SEEK_SET) != 0) {
+static void readDirectory()
+{
+    if (fseek(directoryFile, 0, SEEK_SET) != 0)
+    {
         perror("Error seeking in file");
         exit(EXIT_FAILURE);
     }
@@ -353,7 +366,8 @@ static void readDirectory() {
     int firstBlock;
     directory->quantity = 0;
     directory->size = 0;
-    while (fscanf(directoryFile, "%s %d %d\n", name, &size, &firstBlock) != EOF) {
+    while (fscanf(directoryFile, "%s %d %d\n", name, &size, &firstBlock) != EOF)
+    {
         struct File *temp = createFileRef(name, size, firstBlock);
         addFileToList(temp);
         directory->quantity++;
@@ -362,36 +376,41 @@ static void readDirectory() {
 }
 
 // (i * BLOCK_SIZE + sizeof(uint16_t) * i + i)
-int resetDisk() {
+int resetDisk()
+{
     // Create a buffer with 512 '_'s
-    char buffer[BLOCK_SIZE+sizeof(uint16_t)];
-    for (int i = 0; i < (BLOCK_SIZE+sizeof(uint16_t)); i++) {
+    char buffer[BLOCK_SIZE + sizeof(uint16_t)];
+    for (int i = 0; i < (BLOCK_SIZE + sizeof(uint16_t)); i++)
+    {
         buffer[i] = '_';
     }
 
     // Write 512 0xFF and a newline 2048 times
-    for (int i = 0; i < NUM_BLOCKS; i++) {
-        fwrite(buffer, sizeof(char), (BLOCK_SIZE+sizeof(uint16_t)), disk);
+    for (int i = 0; i < NUM_BLOCKS; i++)
+    {
+        fwrite(buffer, sizeof(char), (BLOCK_SIZE + sizeof(uint16_t)), disk);
         fputc('\n', disk);
     }
 }
 
 // Función para resetear el directorio
-void resetDirectory() {
+void resetDirectory()
+{
     fclose(directoryFile);
     directoryFile = fopen("directory.txt", "w");
-    if (directoryFile == NULL) {
+    if (directoryFile == NULL)
+    {
         perror("Error opening file");
         return;
     }
     fclose(directoryFile);
     directoryFile = fopen("directory.txt", "r+");
-    if (directoryFile == NULL) {
+    if (directoryFile == NULL)
+    {
         perror("Error opening file");
         return;
     }
 }
-
 
 // Función para encontrar si hay un hueco en la memoria donde cabe el valor
 static void createFile(const char *name, int size)
@@ -424,26 +443,30 @@ static void createFile(const char *name, int size)
     while (freeBlock != NULL && size > 0)
     {
         size -= BLOCK_SIZE;
-        if (size > 0) {
+        if (size > 0)
+        {
             FAT[freeBlock->location] = freeBlock->next->location;
             writeFAT(freeBlock->location, freeBlock->next->location);
-        } else {
+        }
+        else
+        {
             FAT[freeBlock->location] = 0x5F5F;
             writeFAT(freeBlock->location, 0x5F5F);
         }
-        
+
         // La posición donde se va a escribir el puntero en el disco es la dirección del bloque * el tamaño del bloque + el tamaño de un puntero * el número del bloque + la dirección del bloque
         previousBlock = (freeBlock->location * BLOCK_SIZE + sizeof(uint16_t) * freeBlock->location + freeBlock->location) + BLOCK_SIZE;
-        
 
         // Seek to the calculated position
-        if (fseek(disk, previousBlock, SEEK_SET) != 0) {
+        if (fseek(disk, previousBlock, SEEK_SET) != 0)
+        {
             perror("Error seeking in file");
             exit(EXIT_FAILURE);
         }
 
         // Write the 2-byte number to the file
-        if (fwrite(&FAT[freeBlock->location], sizeof(uint16_t), 1, disk) != 1) {
+        if (fwrite(&FAT[freeBlock->location], sizeof(uint16_t), 1, disk) != 1)
+        {
             perror("Error writing to file");
             exit(EXIT_FAILURE);
         }
@@ -455,20 +478,21 @@ static void createFile(const char *name, int size)
     saveFile(newNode);
     directory->quantity++;
     directory->size += sizeSave;
-    printf("Archivo creado con éxito %s\n", name);
+    printf("Archivo creado con exito %s\n", name);
 }
 
 // Función para escribir en el archivo
-static void writeFile(const char *name, int offset, const char *data){
-    
+static void writeFile(const char *name, int offset, const char *data)
+{
+
     struct File *temp = directory->head;
     while (temp != NULL)
     {
         if (strcmp(temp->name, name) == 0)
         {
             int dataSize = strlen(data);
-            // Se valida si el offset más lo que se va a escribir es mayor que el tamaño del archivo 
-            if ((offset+dataSize) > temp->size)
+            // Se valida si el offset más lo que se va a escribir es mayor que el tamaño del archivo
+            if ((offset + dataSize) > temp->size)
             {
                 printf("Error: El offset es mayor que el tamaño del archivo.\n");
                 return;
@@ -483,14 +507,14 @@ static void writeFile(const char *name, int offset, const char *data){
             int block = temp->firstBlock;
             // El offset puede ser mayor que un bloque, entonces se busca el bloque correcto
             int byteCount = BLOCK_SIZE; // Primero, byteCount se usa para llegar a la posición del bloque correcto con base en el offset en el disco
-            int blockOffset = 0; // Es el desplazamiento dentro del bloque correcto para empezar a escribir los datos
+            int blockOffset = 0;        // Es el desplazamiento dentro del bloque correcto para empezar a escribir los datos
             // Se busca el bloque correcto
             while (block != 0x5F5F)
             {
-                // Si byteCount es mayor o igual al offset, se encontró el bloque 
+                // Si byteCount es mayor o igual al offset, se encontró el bloque
                 if (byteCount >= offset)
                 {
-                    
+
                     blockOffset = BLOCK_SIZE - (byteCount - offset);
                     byteCount -= offset; // Aquí, byteCounts tiene la cantidad de bytes que se pueden escribir en el bloque
                     break;
@@ -499,20 +523,22 @@ static void writeFile(const char *name, int offset, const char *data){
                 byteCount += BLOCK_SIZE;
             }
             // Si el archivo no tiene suficientes bloques asignados
-            if (block == 0x5F5F) 
+            if (block == 0x5F5F)
             {
                 printf("Error: El archivo no tiene suficientes bloques asignados.\n");
                 return;
             }
             // Aca se escriben solo los bytes necesarios
             // Aquí, byteCount se usa para la cantidad de bytes que se van a escribir en el bloque
-            if (dataSize < byteCount) {
+            if (dataSize < byteCount)
+            {
                 byteCount = dataSize;
             }
-            
+
             int blockPosition = (block * BLOCK_SIZE + sizeof(uint16_t) * block + block) + blockOffset;
             int dataPosition = 0; // Es un puntero a la posición de los datos que se van a escribir
-            while (dataSize > 0 && block != 0x5F5F) {
+            while (dataSize > 0 && block != 0x5F5F)
+            {
                 if (fseek(disk, blockPosition, SEEK_SET) != 0)
                 {
                     perror("Error seeking in file");
@@ -523,21 +549,25 @@ static void writeFile(const char *name, int offset, const char *data){
                     perror("Error writing to file");
                     exit(EXIT_FAILURE);
                 }
-                block = FAT[block]; // Siguiente bloque
+                block = FAT[block];                                                    // Siguiente bloque
                 blockPosition = block * BLOCK_SIZE + sizeof(uint16_t) * block + block; // Posición del siguiente bloque
-                dataPosition += byteCount; // Actualiza puntero de los datos
-                dataSize -= byteCount; // Resta la cantidad de datos que se escribieron
-                if (dataSize < BLOCK_SIZE) { 
+                dataPosition += byteCount;                                             // Actualiza puntero de los datos
+                dataSize -= byteCount;                                                 // Resta la cantidad de datos que se escribieron
+                if (dataSize < BLOCK_SIZE)
+                {
                     byteCount = dataSize;
-                } else {
+                }
+                else
+                {
                     byteCount = BLOCK_SIZE;
                 }
             }
-            if (dataSize > 0) {
+            if (dataSize > 0)
+            {
                 printf("Error: No hay suficiente espacio en el disco para escribir los datos.\n");
                 return;
             }
-            printf("Datos escritos con éxito en %s\n", name);
+            printf("Datos escritos con exito en %s\n", name);
             break;
         }
         temp = temp->next;
@@ -548,8 +578,78 @@ static void writeFile(const char *name, int offset, const char *data){
     }
 }
 
-static void deleteFile (const char *name){
-    
+static void readFile(const char *name, int offset, int size)
+{
+    struct File *temp = directory->head;
+    while (temp != NULL)
+    {
+        if (strcmp(temp->name, name) == 0)
+        {
+
+            if (offset >= temp->size)
+            {
+                printf("Error: El offset es mayor o igual al tamaño del archivo.\n");
+                return;
+            }
+            int block = temp->firstBlock;
+            int byteCount = BLOCK_SIZE;
+            int blockOffset = 0;
+
+            // Navegar hasta el bloque correcto basado en el offset
+            while (block != 0x5F5F)
+            {
+                if (byteCount >= offset)
+                {
+                    blockOffset = BLOCK_SIZE - (byteCount - offset);
+                    break;
+                }
+                block = FAT[block];
+                byteCount += BLOCK_SIZE;
+            }
+
+            if (block == 0x5F5F)
+            {
+                printf("Error: Offset fuera del límite de bloques asignados al archivo.\n");
+                return;
+            }
+
+            // Leer y mostrar contenido desde el offset hasta el tamaño especificado
+            while (size > 0 && block != 0x5F5F)
+            {
+                int blockPosition = block * BLOCK_SIZE + sizeof(uint16_t) * block + block + blockOffset;
+
+                if (fseek(disk, blockPosition, SEEK_SET) != 0)
+                {
+                    perror("Error al buscar en el archivo");
+                    return;
+                }
+
+                for (int i = blockOffset; i < BLOCK_SIZE && size > 0; i++)
+                {
+                    int ch = fgetc(disk);
+                    if (ch == EOF)
+                    {
+                        return;
+                    }
+                    putchar(ch);
+                    size--;
+                }
+
+                blockOffset = 0; // Reiniciar offset para los bloques siguientes
+                block = FAT[block];
+            }
+
+            printf("\n"); // Nueva línea al final de la lectura del archivo
+            return;
+        }
+        temp = temp->next;
+    }
+
+    printf("Error: El archivo no existe.\n");
+}
+static void deleteFile(const char *name)
+{
+
     struct File *temp = directory->head;
     while (temp != NULL)
     {
@@ -564,12 +664,12 @@ static void deleteFile (const char *name){
                 block = FAT[block];
                 FAT[oldBlock] = 0x5F5F;
                 writeFAT(oldBlock, 0x5F5F);
-                
             }
             deleteFileFromList(temp);
 
             FILE *tempFile = fopen("temp.txt", "w");
-            if (tempFile == NULL) {
+            if (tempFile == NULL)
+            {
                 perror("Error opening temporary file");
                 return;
             }
@@ -577,17 +677,20 @@ static void deleteFile (const char *name){
             char line[MAX_LINE_LENGTH];
 
             // Read each line and write to temp file if it doesn't contain the target string
-            while (fgets(line, MAX_LINE_LENGTH, directoryFile) != NULL) {
-                if (strstr(line, name) == NULL) {
+            while (fgets(line, MAX_LINE_LENGTH, directoryFile) != NULL)
+            {
+                if (strstr(line, name) == NULL)
+                {
                     fputs(line, tempFile);
                 }
             }
             fclose(directoryFile);
             fclose(tempFile);
-            remove("directory.txt");              // Delete the original file
+            remove("directory.txt");             // Delete the original file
             rename("temp.txt", "directory.txt"); // Rename the temp file to the original file name
             directoryFile = fopen("directory.txt", "r+");
-            if (directoryFile == NULL) {
+            if (directoryFile == NULL)
+            {
                 perror("Error opening file");
                 return;
             }
@@ -611,8 +714,6 @@ static void deleteFile (const char *name){
 //         temp = temp->next;
 //     }
 // }
-
-
 
 // // Función para dividir la lista en dos mitades. Esto se usa en el mergeSort
 // struct File *split(struct File *head)
@@ -766,8 +867,6 @@ static void deleteFile (const char *name){
 //     list->tail = temp;
 // }
 
-
-
 // // Función para borrar un nodo de una lista
 // static void deleteNode(struct FileList *list, struct File *nodeToDelete)
 // {
@@ -810,8 +909,6 @@ static void deleteFile (const char *name){
 //     }
 //     free(nodeToDelete); // Se libera la memoria
 // }
-
-
 
 // // Función para asignar memoria
 // static void allocateMemory(char name, int size)
@@ -923,7 +1020,7 @@ static void deleteFile (const char *name){
 //         afterHoleNode = afterHoleNode->next;
 //     }
 //     return afterHoleNode;
-// }		
+// }
 
 // // Función para reasignar memoria
 // static void reallocateMemory(char name, int newSize)

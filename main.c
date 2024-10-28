@@ -82,54 +82,59 @@
 
 int main(int argc, char *argv[])
 {
-  
-  disk = fopen("disk.txt", "r+b"); // Use "r+b" to read/write in binary mode
-  if (disk == NULL) {
-      perror("Error opening file");
-      return EXIT_FAILURE;
-  }
-  FATFile = fopen("FAT.txt", "r+b");
-  if (FATFile == NULL) {
-      perror("Error opening file");
-      return EXIT_FAILURE;
-  }
-  directoryFile = fopen("directory.txt", "r+");
-  if (directoryFile == NULL) {
-      perror("Error opening file");
-      return EXIT_FAILURE;
-  }
 
-  directory = createFileList();
-  openFiles = createFileList();
-  freeBlocks = createBlockList();
-  resetDirectory();
-  resetFAT();
-  resetDisk();
-  readFAT();
-  readDirectory();
+    disk = fopen("disk.txt", "r+b"); // Use "r+b" to read/write in binary mode
+    if (disk == NULL)
+    {
+        perror("Error opening file");
+        return EXIT_FAILURE;
+    }
+    FATFile = fopen("FAT.txt", "r+b");
+    if (FATFile == NULL)
+    {
+        perror("Error opening file");
+        return EXIT_FAILURE;
+    }
+    directoryFile = fopen("directory.txt", "r+");
+    if (directoryFile == NULL)
+    {
+        perror("Error opening file");
+        return EXIT_FAILURE;
+    }
 
-  createFile("file1.txt", 1500);
-  createFile("file2.txt", 2000);
-  createFile("file3.txt", 1000);
-  deleteFile("file2.txt");
-  // writeFile("file1.txt", 0, "Hola mundo");
-  fclose(disk);
-  fclose(FATFile);
-  fclose(directoryFile);
-  
-  // if (argc < 2)
-  // {
-  //   printf("Uso: %s <nombre del archivo>\n", argv[0]);
-  //   return 1;
-  // }
+    directory = createFileList();
+    openFiles = createFileList();
+    freeBlocks = createBlockList();
+    resetDirectory();
+    resetFAT();
+    resetDisk();
+    readFAT();
+    readDirectory();
 
-  // // Crear las listas globales
-  // createList(&assignedList);
-  // createList(&unassignedList);
-  // startMemory();
-  // addValue(unassignedList, '0', 0, MEMORY_SIZE);
+    createFile("file1.txt", 1500);
+    createFile("file2.txt", 2000);
+    createFile("file3.txt", 1000);
+    deleteFile("file2.txt");
+    writeFile("file1.txt", 0, "Hola mundo");
 
-  // readLinesFromFile(argv[1]);
+    readFile("file1.txt", 0, 1500);
+    fclose(disk);
+    fclose(FATFile);
+    fclose(directoryFile);
 
-  // return 0;
+    // if (argc < 2)
+    // {
+    //   printf("Uso: %s <nombre del archivo>\n", argv[0]);
+    //   return 1;
+    // }
+
+    // // Crear las listas globales
+    // createList(&assignedList);
+    // createList(&unassignedList);
+    // startMemory();
+    // addValue(unassignedList, '0', 0, MEMORY_SIZE);
+
+    // readLinesFromFile(argv[1]);
+
+    // return 0;
 }
