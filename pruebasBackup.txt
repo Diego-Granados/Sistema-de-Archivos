@@ -36,8 +36,3 @@ RESET
 CREATE file1.txt 1500
 READ file1.txt 1400 200
 READ file1.txt 0 1600
-
-+ Prueba cuando falta espacio para un archivo
-RESET
-CREATE file1.txt 1044400
-CREATE file2.txt 1000

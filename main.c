@@ -32,8 +32,7 @@ void processLine(const char *instruction)
     } else if (sscanf(instruction, "WRITE %s %d \"%[^\"]\"", name, &offset, data) == 3) {
         writeFile(name, offset, data);
     } else if (sscanf(instruction, "READ %s %d %d", name, &offset, &length) == 3) {
-        // readFile(name, offset, length);
-        return;
+        readFile(name, offset, length);
     } else if (strncmp(instruction, "LIST", 4) == 0) {
         listFiles();
     } else if (strncmp(instruction, "RESET", 5) == 0) {
@@ -93,6 +92,8 @@ int main(int argc, char *argv[])
     directory = createFileList();
     openFiles = createFileList();
     freeBlocks = createBlockList();
+    readFAT();
+    readDirectory();
 
     // readLinesFromFile(argv[1]);
     readLinesFromFile("pruebas.txt");

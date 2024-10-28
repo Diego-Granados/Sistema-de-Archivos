@@ -7,6 +7,7 @@
 #define MAX_FILES 100
 #define NUM_BLOCKS 2048
 #define MAX_LINE_LENGTH 1024
+// El máximo tamaño de un archivo es de 510 * 2048 = 1044480 bytes
 
 // Vamos a usar para los archivos lo de la lista enlazada y para los bloques libres el counting
 
@@ -15,7 +16,7 @@
 struct File
 {
     char *name;          // El nombre del archivo
-    int size;            // Tamaño
+    unsigned int size;            // Tamaño
     uint16_t firstBlock; // Puntero al próximo bloque
     struct File *prev;   // Puntero al nodo anterior
     struct File *next;   // Puntero al próximo nodo
@@ -25,7 +26,7 @@ struct File
 struct FileList
 {
     uint8_t quantity;
-    int size;
+    unsigned int size;
     struct File *head; // Puntero a la cabeza de la lista
     struct File *tail; // Puntero a la cola de la lista
 };
@@ -41,6 +42,8 @@ static struct FileList *createFileList()
     }
     (list)->head = NULL;
     (list)->tail = NULL;
+    list->quantity = 0;
+    list->size = 0;
     return list;
 }
 
@@ -313,6 +316,14 @@ static void readFAT()
         perror("Error reading from file");
         exit(EXIT_FAILURE);
     }
+    for (int i = 0; i < NUM_BLOCKS; i++)
+    {
+        if (FAT[i] == 0x5F5F)
+        {
+            struct Block *newBlock = createBlockRef(i);
+            addBlockToList(newBlock);
+        }
+    }    
 }
 
 static void resetFAT()
@@ -473,6 +484,7 @@ static void createFile(const char *name, int size)
         temp = freeBlock;
         freeBlock = freeBlock->next;
         deleteBlock(temp);
+        freeBlocks->quantity--;
     }
     addFileToList(newNode);
     saveFile(newNode);
@@ -586,7 +598,7 @@ static void readFile(const char *name, int offset, int size)
         if (strcmp(temp->name, name) == 0)
         {
 
-            if (offset >= temp->size)
+            if ((offset + size) > temp->size)
             {
                 printf("Error: El offset es mayor o igual al tamaño del archivo.\n");
                 return;
@@ -722,10 +734,10 @@ static void listFiles(){
 }
 
 static void reset(){
+    freeBlocks = createBlockList();
     resetDirectory();
     resetFAT();
     resetDisk();
-    freeBlocks = createBlockList();
     directory = createFileList();
     openFiles = createFileList();
 }
