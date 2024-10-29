@@ -6,6 +6,8 @@ Elaborado por:
 - Daniel Granados Retana
 - Diego Granados Retana
 
+## Documentación
+
 La documentación principal se encuentra en el PDF titulado: **Informe sobre Sistema de Archivos**
 
 El método para ejecutar el programa es el siguiente:
@@ -20,3 +22,8 @@ Se realizaron tres archivos de pruebas:
 1. pruebas.txt: Es un archivo con una gran cantidad de pruebas para probar diferentes aspectos.
 2. pruebaPersistente1.txt: Es un archivo de pruebas que crea un archivo en el disco y escribo datos que abarcan varios bloques.
 3. pruebaPersistente2.txt: Es un archivo que verifica que la escritura realizada en pruebaPersistente1.txt haya quedado persistente en el disco. También valida que la lectura a través de bloques se haya realizado correctamente.
+
+## Enlace a video explicativo
+
+Enlace a video explicativo
+https://youtu.be/3_OtC9KJpnc
