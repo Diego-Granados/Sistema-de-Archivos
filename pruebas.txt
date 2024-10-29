@@ -85,7 +85,7 @@ READ archivo1.txt 0 11
 # Datos escritos con exito en archivo1.txt
 # Hola, amigo
 
-+Prueba escritura y lectura en multiples bloques
++Prueba múltiples escrituras y lectura
 CREATE bigfile.txt 3000
 WRITE bigfile.txt 0 "Primer bloque."
 WRITE bigfile.txt 20 "Segundo bloque."
