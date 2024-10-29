@@ -10,26 +10,27 @@
 // Funcion para procesar cada linea
 void processLine(const char *instruction)
 {
-    // Check if the line is empty or contains only a newline character
+    // Revisa si la linea esta vacia
     if (instruction[0] == '\0' || strlen(instruction) == 0)
     {
-        printf(" \n"); // Print a space and a newline for empty lines
+        printf(" \n");
         return;
     }
 
-    // Skip lines starting with '#'
+    // Salta las lienas que empiezan con '#'
     if (instruction[0] == '#')
     {
         return;
     }
 
-    // Print lines that start with '+', excluding the '+'
+    // Imprime la lineas que empiezan con '+'
     if (instruction[0] == '+')
     {
-        printf("%s\n", instruction + 1); // Print without the '+'
+        printf("%s\n", instruction + 1);
         return;
     }
 
+    // Realiza los comandos en base a la instruccion del archivo
     char command[10], name[MAX_FILENAME], data[MAX_CONTENT_SIZE];
     int offset, size, length;
 
@@ -80,7 +81,7 @@ void readLinesFromFile(const char *filename)
     char instruction[256];
     while (fgets(instruction, sizeof(instruction), file))
     {
-        instruction[strcspn(instruction, "\n")] = '\0'; // Remove newline character
+        instruction[strcspn(instruction, "\n")] = '\0';
         processLine(instruction);
     }
 
@@ -89,12 +90,6 @@ void readLinesFromFile(const char *filename)
 
 int main(int argc, char *argv[])
 {
-    // if (argc < 2)
-    // {
-    //     printf("Uso: %s <nombre del archivo>\n", argv[0]);
-    //     return 1;
-    // }
-
     disk = fopen("disk.txt", "r+b"); // Use "r+b" to read/write in binary mode
     if (disk == NULL)
     {
@@ -120,21 +115,8 @@ int main(int argc, char *argv[])
     readFAT();
     readDirectory();
 
-    // readLinesFromFile(argv[1]);
     readLinesFromFile("pruebas.txt");
-    // resetDirectory();
-    // resetFAT();
-    // resetDisk();
-    // readFAT();
-    // readDirectory();
 
-    // createFile("file1.txt", 1500);
-    // createFile("file2.txt", 2000);
-    // createFile("file3.txt", 1000);
-    // deleteFile("file2.txt");
-    // createFile("file4.txt", 2500);
-    // listFiles();
-    // writeFile("file1.txt", 0, "Hola mundo");
     fclose(disk);
     fclose(FATFile);
     fclose(directoryFile);
