@@ -27,3 +27,7 @@ Se realizaron tres archivos de pruebas:
 
 Enlace a video explicativo
 https://youtu.be/3_OtC9KJpnc
+
+## Enlace al repositorio
+
+https://github.com/Diego-Granados/Sistema-de-Archivos
