@@ -1,0 +1,4 @@
+# Se crea un archivo que pasa por bloques
+RESET
+CREATE persistent.txt 750
+WRITE persistent.txt 506 "Esta oracion esta en varios bloques."

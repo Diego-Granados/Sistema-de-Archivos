@@ -104,8 +104,8 @@ RESET
 CREATE duplicate.txt 500
 CREATE duplicate.txt 1000
 # Resultado esperado
-#Archivo creado con exito duplicate.txt
-#El archivo ya existe
+# Archivo creado con exito duplicate.txt
+# El archivo ya existe
 
 
 +Prueba de lectura de contenido sin escribir previamente
@@ -114,7 +114,8 @@ CREATE emptyfile.txt 500
 READ emptyfile.txt 0 100
 # Salida esperada
 # Archivo creado con exito emptyfile.txt
-# No hay informacion en el archivo.
+# ____________________________________________________________________________________________________
+# Se imprimen caracteres vacíos, ya que el archivo está vacío.
 
 # Prueba de escritura y lectura de caracteres especiales
 RESET
@@ -126,7 +127,7 @@ READ specialfile.txt 0 50
 # Datos escritos con exito en specialfile.txt
 # __________!@#$%^&*()_+[];'.,<>?:{}________________
 
-+Prueba de escritura y lectura con límites en los tamaños
++Prueba de escritura y lectura con limites en los tamanos
 RESET
 CREATE limite.txt 1024
 WRITE limite.txt 1023 "X"

@@ -3,7 +3,6 @@
 #include <string.h>
 #include "file_system.c"
 
-#define MAX_FILES 100
 #define MAX_FILENAME 50
 #define MAX_CONTENT_SIZE 1000
 
@@ -90,6 +89,12 @@ void readLinesFromFile(const char *filename)
 
 int main(int argc, char *argv[])
 {
+    if (argc < 2)
+    {
+        printf("Uso: %s <nombre del archivo>\n", argv[0]);
+        return 1;
+    }
+
     disk = fopen("disk.txt", "r+b"); // Use "r+b" to read/write in binary mode
     if (disk == NULL)
     {
@@ -115,7 +120,7 @@ int main(int argc, char *argv[])
     readFAT();
     readDirectory();
 
-    readLinesFromFile("pruebas.txt");
+    readLinesFromFile(argv[1]);
 
     fclose(disk);
     fclose(FATFile);

@@ -1,0 +1,2 @@
+# Abrir archivo
+READ persistent.txt 506 36
